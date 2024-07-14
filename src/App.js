@@ -1,25 +1,49 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import OrderForm from './components/OrderForm';
+import OrderList from './components/OrderList';
+import OrderFilter from './components/OrderFilter';
+import './styles.css';
 
-function App() {
+const App = () => {
+  const [orders, setOrders] = useState([]);
+
+  // Retrieve orders from local storage when the component mounts
+  useEffect(() => {
+    const storedOrders = localStorage.getItem('orders');
+    if (storedOrders) {
+      setOrders(JSON.parse(storedOrders));
+    }
+  }, []);
+
+  // Save orders to local storage whenever orders state changes
+  useEffect(() => {
+    localStorage.setItem('orders', JSON.stringify(orders));
+  }, [orders]);
+
+  const addOrder = (order) => {
+    setOrders([...orders, order]);
+  };
+
+  const filterOrders = (filter) => {
+    const storedOrders = JSON.parse(localStorage.getItem('orders'));
+    const filteredOrders = storedOrders.filter((order) => {
+      return (
+        (filter.order_type === '' || order.order_type === filter.order_type) &&
+        (filter.status === '' || order.status === filter.status) &&
+        (filter.order_date === '' || order.order_date === filter.order_date)
+      );
+    });
+    setOrders(filteredOrders);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Order Management</h1>
+      <OrderForm addOrder={addOrder} />
+      <OrderFilter filterOrders={filterOrders} />
+      <OrderList orders={orders} />
     </div>
   );
-}
+};
 
 export default App;
